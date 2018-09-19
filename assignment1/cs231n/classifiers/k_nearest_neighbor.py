@@ -19,6 +19,7 @@ class KNearestNeighbor(object):
     """
     self.X_train = X
     self.y_train = y
+
     
   def predict(self, X, k=1, num_loops=0):
     """
@@ -124,6 +125,7 @@ class KNearestNeighbor(object):
     distpower2 = xpower2+ypower2+minus2xy
 
     dists = np.sqrt(distpower2)
+    
     return dists
 
   def predict_labels(self, dists, k=1):
@@ -139,12 +141,29 @@ class KNearestNeighbor(object):
     - y: A numpy array of shape (num_test,) containing predicted labels for the
       test data, where y[i] is the predicted label for the test point X[i].  
     """
+    """
+    Given a matrix of distances between test points and training points,
+    predict a label for each test point.
+    Inputs:
+    - dists: A numpy array of shape (num_test, num_train) where dists[i, j]
+      gives the distance betwen the ith test point and the jth training point.
+    Returns:
+    - y: A numpy array of shape (num_test,) containing predicted labels for the
+      test data, where y[i] is the predicted label for the test point X[i].  
+    """
     num_test = dists.shape[0]
     y_pred = np.zeros(num_test)
     for i in range(num_test):
       # A list of length k storing the labels of the k nearest neighbors to
       # the ith test point.
-      idx_closests = np.argpartition(dists[i] ,-len(dists[0]))[:k]
+      closest_y = []
+      
+    num_test = dists.shape[0]
+    y_pred = np.zeros(num_test)
+    for i in range(num_test):
+      # A list of length k storing the labels of the k nearest neighbors to
+      # the ith test point.
+      idx_closests = np.argsort(dists[i])[0:k]
       # print(i, dists[i], np.argpartition(dists[i] ,-len(dists[0])))
       closest_y = self.y_train[idx_closests]
       # print(closest_y, np.bincount(closest_y), np.argmax(np.bincount(closest_y)))
@@ -152,7 +171,7 @@ class KNearestNeighbor(object):
       y_pred[i] = np.argmax(np.bincount(closest_y))
       # y_pred[i] = np.argmax(np.bincount(np.sort(dists[i])[:k]))
       # closest_y = []
-    
+  
 
     return y_pred
 
