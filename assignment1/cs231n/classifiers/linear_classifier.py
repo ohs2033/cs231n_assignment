@@ -40,6 +40,9 @@ class LinearClassifier(object):
       X_batch = None
       y_batch = None
 
+      rand_idx = np.random.choice(num_train, batch_size)
+      X_batch = X[rand_idx]
+      y_batch = y[rand_idx]
       #########################################################################
       # TODO:                                                                 #
       # Sample batch_size elements from the training data and their           #
@@ -59,6 +62,8 @@ class LinearClassifier(object):
       # evaluate loss and gradient
       loss, grad = self.loss(X_batch, y_batch, reg)
       loss_history.append(loss)
+
+      self.W -= learning_rate * grad
 
       # perform parameter update
       #########################################################################
@@ -90,14 +95,9 @@ class LinearClassifier(object):
       class.
     """
     y_pred = np.zeros(X.shape[0])
-    ###########################################################################
-    # TODO:                                                                   #
-    # Implement this method. Store the predicted labels in y_pred.            #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                           END OF YOUR CODE                              #
-    ###########################################################################
+    scores = np.dot(X, self.W)
+    y_pred = np.argmax(scores,1)
+    return y_pred
     return y_pred
   
   def loss(self, X_batch, y_batch, reg):
@@ -123,6 +123,12 @@ class LinearSVM(LinearClassifier):
 
   def loss(self, X_batch, y_batch, reg):
     return svm_loss_vectorized(self.W, X_batch, y_batch, reg)
+
+  def predict(self, X):
+    y_pred = np.zeros(X.shape[0])
+    scores = np.dot(X, self.W)
+    y_pred = np.argmax(scores,1)
+    return y_pred
 
 
 class Softmax(LinearClassifier):

@@ -78,7 +78,7 @@ def svm_loss_naive(W, X, y, reg):
     dW += gradients
 
 
-  dW /= num_train
+  dW /= num_train + 2 * reg * W
 
 
   return loss, dW
@@ -99,15 +99,11 @@ def svm_loss_vectorized(W, X, y, reg):
   num_train = X.shape[0]
 
   scores = np.dot(X,W)
-  print(scores.shape) # (num_train, 10)
-  print(dW.shape)
 
   #[sy1, sy2, sy3, sy4]
   y_scores = np.choose(y, scores.T)
 
-  print('y scores vector ', y_scores.shape)
-
-  scores -= y_scores.reshape(500,1)
+  scores -= y_scores.reshape(num_train,1)
   scores += 1
   scores = np.maximum(0, scores)
   scores[range(num_train), y] = 0
@@ -120,7 +116,6 @@ def svm_loss_vectorized(W, X, y, reg):
 
   # Add regularization to the loss.
   loss += reg * np.sum(W * W)
-
 
 
   #############################################################################
@@ -142,10 +137,10 @@ def svm_loss_vectorized(W, X, y, reg):
   # loss.                                                                     #
   #############################################################################
   mask = np.array(scores != 0 , dtype=int)
-  gradients = np.multiply(X, scores.reshape(num_train, num_class))
+  mask[range(num_train), y] = - np.sum(mask, 1)
+  gradients = np.dot(X.T, mask)
+  dW = gradients / num_train + 2 * reg * W
 
-  print(gradients.shape)
-  # scores[[range(num_train)]] - scores[]
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
