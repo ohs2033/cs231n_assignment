@@ -20,19 +20,44 @@ def softmax_loss_naive(W, X, y, reg):
   - gradient with respect to weights W; an array of same shape as W
   """
   # Initialize the loss and gradient to zero.
+  # softmax gradient is pi - 1(when only i)
   loss = 0.0
   dW = np.zeros_like(W)
 
-  #############################################################################
-  # TODO: Compute the softmax loss and its gradient using explicit loops.     #
-  # Store the loss in loss and the gradient in dW. If you are not careful     #
-  # here, it is easy to run into numeric instability. Don't forget the        #
-  # regularization!                                                           #
-  #############################################################################
-  pass
-  #############################################################################
-  #                          END OF YOUR CODE                                 #
-  #############################################################################
+  num_train = X.shape[0]
+  num_class = W.shape[1]
+
+  loss = np.zeros(num_train)
+  gradient = np.zeros(W.shape)
+
+
+  wx = np.dot(X,W)
+  ewx = np.exp(wx)
+
+  # calculate probability.
+  denom = 1/np.sum(ewx, 1)
+  # print('denom is ', denom[0])
+  prob = (denom * ewx.T).T 
+
+  # get loss value. 
+  yprobs = prob[range(num_train), y]
+
+  loss = -np.log(yprobs)
+  loss = np.sum(loss) / num_train
+  loss += np.sum(W**2) * reg
+
+
+  #get gradient value.
+  grad1 = prob
+
+  #one-hot encoding 
+  onehot = np.zeros((num_train,num_class))
+  onehot[range(num_train),y] = 1
+
+  grad1 -= onehot
+  grad = X.T.dot(grad1) # 3074* 500 500 * 10 -> 3074 * 500
+  
+  dW =  grad / num_train + 2*reg*W
 
   return loss, dW
 
@@ -43,9 +68,12 @@ def softmax_loss_vectorized(W, X, y, reg):
 
   Inputs and outputs are the same as softmax_loss_naive.
   """
+
   # Initialize the loss and gradient to zero.
   loss = 0.0
   dW = np.zeros_like(W)
+
+  loss, dW = softmax_loss_naive(W, X, y, reg)
 
   #############################################################################
   # TODO: Compute the softmax loss and its gradient using no explicit loops.  #

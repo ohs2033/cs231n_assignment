@@ -134,6 +134,41 @@ class LinearSVM(LinearClassifier):
 class Softmax(LinearClassifier):
   """ A subclass that uses the Softmax + Cross-entropy loss function """
 
+  def train(self, X, y,  learning_rate, reg, num_iters, batch_size):
+    num_train, dim = X.shape
+    num_classes = np.max(y) + 1
+
+    if self.W is None:
+      # lazily initialize W
+      self.W = 0.001 * np.random.randn(dim, num_classes)
+    loss_history = []
+    
+    for it in range(num_iters):
+      X_batch = None
+      y_batch = None
+      rand_idx = np.random.randn(dim, num_classes)
+      X_batch = X[rand_idx]
+      y_batch = y[rand_idx]
+
+      loss, gradient = softmax_loss_vectorized(self.W, X_batch, y_batch, reg)
+      Weight += - learning_rate * gradient
+      loss_history.append(loss)
+
+    return loss_history
+
+
   def loss(self, X_batch, y_batch, reg):
     return softmax_loss_vectorized(self.W, X_batch, y_batch, reg)
+
+
+  def predict(self, X_batch, y_batch, reg):
+    ewx = np.exp(numpy.dot(X_batch, self.W))
+    denom = ewx.sum(1)
+    probs = (denom*ewx.T).T
+    y_pred = probs.argmax(1)
+
+
+
+
+
 
