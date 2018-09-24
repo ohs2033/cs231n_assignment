@@ -144,22 +144,27 @@ class TwoLayerNet(object):
     # print(scores.shape)
     onehot = np.zeros((N, scores.shape[1]))
     onehot[range(N), y] = 1
+    # print(probs)
+    # print(onehot)
     softmax_grad = probs - onehot
+    softmax_grad /= N
 
-    # print(softmax_grad)
     grads['W2'] = first_output.T.dot(softmax_grad) + 2*reg*W2 
-    grads['b2'] = np.sum(softmax_grad,0) + 2*reg*b2
+    grads['b2'] = np.sum(softmax_grad, 0) + 2*reg*b2
+    
 
-    #############################################################################
-    # TODO: Compute the backward pass, computing the derivatives of the weights #
-    # and biases. Store the results in the grads dictionary. For example,       #
-    # grads['W1'] should store the gradient on W1, and be a matrix of same size #
-    #############################################################################
-    pass
-    #############################################################################
-    #                              END OF YOUR CODE                             #
-    #############################################################################
+    # cacluate gradient of first output. num data* num class  X  num_class * num_first_class => num_data * num_first_class
+    grads_first_output = np.dot(softmax_grad, W2.T)
+    mask = np.array(first_output > 0)
+    grads_first_output = mask* grads_first_output
 
+  
+    grads['W1'] = np.dot(X.T, grads_first_output)+ 2*reg*W1
+    grads['b1'] = np.sum(grads_first_output, 0) + 2*reg*b1
+
+
+
+    # print(grads['W1'])
     return loss, grads
 
   def train(self, X, y, X_val, y_val,
@@ -195,11 +200,16 @@ class TwoLayerNet(object):
       X_batch = None
       y_batch = None
 
+      rand_idx = np.random.choice(num_train, batch_size)
+      X_batch = X[rand_idx]
+      y_batch = y[rand_idx]
+
+
+
       #########################################################################
       # TODO: Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
-      pass
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -207,6 +217,13 @@ class TwoLayerNet(object):
       # Compute loss and gradients using the current minibatch
       loss, grads = self.loss(X_batch, y=y_batch, reg=reg)
       loss_history.append(loss)
+
+      # W1, b1 = self.params['W1'], self.params['b1']
+      # W2, b2 = self.params['W2'], self.params['b2']
+
+      for param_name in grads:
+        self.params[param_name] -= learning_rate*grads[param_name]
+
 
       #########################################################################
       # TODO: Use the gradients in the grads dictionary to update the         #
@@ -254,12 +271,20 @@ class TwoLayerNet(object):
       the elements of X. For all i, y_pred[i] = c means that X[i] is predicted
       to have class c, where 0 <= c < C.
     """
-    y_pred = None
+    scores = self.loss(X)
+    prob = np.exp(scores)
+    denom = 1/ np.sum(prob, 1)
+    probs = (denom*prob.T).T    
+
+
+
+    y_pred = np.argmax(probs,1)
+
 
     ###########################################################################
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
-    pass
+    # pass
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################

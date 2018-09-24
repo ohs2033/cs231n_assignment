@@ -146,7 +146,7 @@ class Softmax(LinearClassifier):
     for it in range(num_iters):
       X_batch = None
       y_batch = None
-      rand_idx = np.random.randn(dim, num_classes)
+      rand_idx = np.random.choice(dim, num_classes)
       X_batch = X[rand_idx]
       y_batch = y[rand_idx]
 
