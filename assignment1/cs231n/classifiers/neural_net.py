@@ -41,6 +41,7 @@ class TwoLayerNet(object):
     self.params['b2'] = np.zeros(output_size)
 
   def loss(self, X, y=None, reg=0.0):
+
     """
     Compute the loss and gradients for a two layer fully connected neural
     network.
@@ -64,12 +65,20 @@ class TwoLayerNet(object):
       with respect to the loss function; has the same keys as self.params.
     """
     # Unpack variables from the params dictionary
+    
     W1, b1 = self.params['W1'], self.params['b1']
     W2, b2 = self.params['W2'], self.params['b2']
     N, D = X.shape
 
+    first_output = np.maximum(0, np.dot(X,  W1)+b1)
+    # print('first output shape i s', first_output.shape)
+    second_output = first_output.dot(W2)+b2
+
+
     # Compute the forward pass
-    scores = None
+    scores = second_output
+
+
     #############################################################################
     # TODO: Perform the forward pass, computing the class scores for the input. #
     # Store the result in the scores variable, which should be an array of      #
@@ -86,6 +95,39 @@ class TwoLayerNet(object):
 
     # Compute the loss
     loss = None
+
+    prob = np.exp(scores)
+    denom = 1/ np.sum(prob, 1)
+    probs = (denom*prob.T).T    
+    ypred = probs.argmax(1)
+    # print(ypred, y)
+    loss = - np.log(probs[range(probs.shape[0]), y])
+    loss = np.sum(loss)
+    # 
+    # yscore = scores[range(N), y]
+    # print(yscore)
+    # print(scores)
+    # scores = scores - yscore.reshape(N,1)
+    # print(scores)
+
+    # scores += 1
+    # scores = np.maximum(scores,0)
+    # print(scores)
+    # scores[range(N), y] = 0
+    # loss = np.sum(scores)
+
+
+
+    loss = loss/N  + reg*(np.sum(W1**2) + np.sum(W2**2) + np.sum(b1**2) + np.sum(b2**2))
+
+
+    # loss /= N
+    # print('loss is ', loss)
+
+    # loss = np.sum((scores.argmax(1) - y)**2) + reg*np.sum(W1**2) + reg*np.sum(W2**2)
+    
+
+
     #############################################################################
     # TODO: Finish the forward pass, and compute the loss. This should include  #
     # both the data loss and L2 regularization for W1 and W2. Store the result  #
@@ -99,6 +141,15 @@ class TwoLayerNet(object):
 
     # Backward pass: compute gradients
     grads = {}
+    # print(scores.shape)
+    onehot = np.zeros((N, scores.shape[1]))
+    onehot[range(N), y] = 1
+    softmax_grad = probs - onehot
+
+    # print(softmax_grad)
+    grads['W2'] = first_output.T.dot(softmax_grad) + 2*reg*W2 
+    grads['b2'] = np.sum(softmax_grad,0) + 2*reg*b2
+
     #############################################################################
     # TODO: Compute the backward pass, computing the derivatives of the weights #
     # and biases. Store the results in the grads dictionary. For example,       #
