@@ -204,8 +204,6 @@ class TwoLayerNet(object):
       X_batch = X[rand_idx]
       y_batch = y[rand_idx]
 
-
-
       #########################################################################
       # TODO: Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
@@ -231,7 +229,6 @@ class TwoLayerNet(object):
       # using stochastic gradient descent. You'll need to use the gradients   #
       # stored in the grads dictionary defined above.                         #
       #########################################################################
-      pass
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -272,6 +269,7 @@ class TwoLayerNet(object):
       to have class c, where 0 <= c < C.
     """
     scores = self.loss(X)
+
     prob = np.exp(scores)
     denom = 1/ np.sum(prob, 1)
     probs = (denom*prob.T).T    
