@@ -1,5 +1,6 @@
 from builtins import range
 import numpy as np
+from functools import reduce
 
 
 def affine_forward(x, w, b):
@@ -20,16 +21,11 @@ def affine_forward(x, w, b):
     - out: output, of shape (N, M)
     - cache: (x, w, b)
     """
-    out = None
-    ###########################################################################
-    # TODO: Implement the affine forward pass. Store the result in out. You   #
-    # will need to reshape the input into rows.                               #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+    x_length = reduce(lambda x, y: x*y, x.shape[1:])
+    x_vector = x.reshape((x.shape[0], x_length))
+    out = x_vector.dot(w) + b
     cache = (x, w, b)
+
     return out, cache
 
 
@@ -51,6 +47,19 @@ def affine_backward(dout, cache):
     """
     x, w, b = cache
     dx, dw, db = None, None, None
+
+    
+
+    num_input = x.shape[0]
+    num_size = reduce(lambda x,y: x*y, x.shape[1:])
+
+
+    dx = dout.dot(w.T).reshape(x.shape)
+    vector_x =  x.reshape((num_input, num_size)) # N,D
+
+    dw = vector_x.T.dot(dout)
+    db = dout.sum(0)
+
     ###########################################################################
     # TODO: Implement the affine backward pass.                               #
     ###########################################################################
