@@ -81,7 +81,10 @@ def relu_forward(x):
     - out: Output, of the same shape as x
     - cache: x
     """
-    out = None
+    
+    relued_x = np.maximum(x, 0)
+    assert x.shape == relued_x.shape
+    out = relued_x
     ###########################################################################
     # TODO: Implement the ReLU forward pass.                                  #
     ###########################################################################
@@ -104,7 +107,17 @@ def relu_backward(dout, cache):
     Returns:
     - dx: Gradient with respect to x
     """
+
     dx, x = None, cache
+    shape = x.shape
+
+    mask = x.copy()
+    mask[mask < 0] = 0
+    mask[mask > 0] = 1
+    dx = mask * dout
+    
+
+
     ###########################################################################
     # TODO: Implement the ReLU backward pass.                                 #
     ###########################################################################
@@ -432,7 +445,7 @@ def conv_forward_naive(x, w, b, conv_param):
 
     The input consists of N data points, each with C channels, height H and
     width W. We convolve each input with F different filters, where each filter
-    spans all C channels and has height HH and width WW.
+    spans all C channels and has height HH and width f.
 
     Input:
     - x: Input data of shape (N, C, H, W)

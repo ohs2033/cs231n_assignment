@@ -1,6 +1,7 @@
 from builtins import range
 from builtins import object
 import numpy as np
+from functools import reduce
 
 from cs231n.layers import *
 from cs231n.layer_utils import *
@@ -37,6 +38,13 @@ class TwoLayerNet(object):
         """
         self.params = {}
         self.reg = reg
+        
+        self.params['W1'] = 1e-3 * np.random.randn(input_dim, hidden_dim)
+        self.params['W2'] = 1e-3 * np.random.randn(hidden_dim, num_classes)
+        self.params['b1'] = 1e-3 * np.zeros(hidden_dim)
+        self.params['b2'] = 1e-3 * np.zeros(num_classes)
+
+
 
         ############################################################################
         # TODO: Initialize the weights and biases of the two-layer net. Weights    #
@@ -73,6 +81,22 @@ class TwoLayerNet(object):
           names to gradients of the loss with respect to those parameters.
         """
         scores = None
+
+        N  = X.shape[0]
+        D1 = reduce(lambda x,y: x*y, X.shape[1:])
+        W1, W2, b1, b2 = self.params
+        
+        out,cache = affine_forward(X, W1, b1)
+        out_relu, cache_relu = relu_forward(out)
+        second_out, second_cache = affine_forward(out_relu, W2, b2)
+        
+        scores = second_out
+        if y == None:
+            return scores
+
+
+
+
         ############################################################################
         # TODO: Implement the forward pass for the two-layer net, computing the    #
         # class scores for X and storing them in the scores variable.              #
