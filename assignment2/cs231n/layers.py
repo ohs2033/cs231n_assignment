@@ -733,6 +733,8 @@ def softmax_loss(x, y):
     log_probs = shifted_logits - np.log(Z)
     probs = np.exp(log_probs)
     N = x.shape[0]
+
+
     loss = -np.sum(log_probs[np.arange(N), y]) / N
     dx = probs.copy()
     dx[np.arange(N), y] -= 1
