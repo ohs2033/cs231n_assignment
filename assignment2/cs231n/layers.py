@@ -171,6 +171,8 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     momentum = bn_param.get('momentum', 0.9)
 
     N, D = x.shape
+    standarized_x = np.zeros((N,D))
+    original_x = x.copy()
     running_mean = bn_param.get('running_mean', np.zeros(D, dtype=x.dtype))
     running_var = bn_param.get('running_var', np.zeros(D, dtype=x.dtype))
 
@@ -180,7 +182,11 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     running_mean = momentum * running_mean + (1 - momentum) * means
     running_var = momentum * running_var + (1 - momentum) * vars
 
-
+    std_eps = np.sqrt(eps + vars)
+    xmu = x - means
+    varx = (xmu ** 2).sum(0)
+    std = np.sqrt(varx+eps)
+    stdinvs = 1./std
 
     out, cache = None, None
     if mode == 'train':
@@ -188,8 +194,8 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         #mean and variance
         x = x - means
         std += eps
-        x = x / np.sqrt(eps + vars)
-        out = x * (gamma) + beta
+        standarized_x = x / std_eps
+        out = standarized_x * (gamma) + beta
 
 
         #######################################################################
@@ -224,10 +230,9 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         # then scale and shift the normalized data using gamma and beta.      #
         # Store the result in the out variable.                               #
         #######################################################################
-
         x = x - running_mean
-        x = x / np.sqrt(running_var + eps)
-        x = x * gamma
+        standarized_x = x / np.sqrt(running_var + eps)
+        x = standarized_x * gamma
         out = x + beta
 
         pass
@@ -237,6 +242,12 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     else:
         raise ValueError('Invalid forward batchnorm mode "%s"' % mode)
 
+    xmu = x - means
+    varx = (xmu ** 2).sum(0)
+    std = np.sqrt(varx+eps)
+    stdinvs = 1./std
+    cache = (original_x, gamma, std, standarized_x, varx, xmu, stdinvs, eps)
+    #cache = (original_x, gamma, std_eps, standarized_x)
     # Store the updated running means back into bn_param
     bn_param['running_mean'] = running_mean
     bn_param['running_var'] = running_var
@@ -261,7 +272,22 @@ def batchnorm_backward(dout, cache):
     - dgamma: Gradient with respect to scale parameter gamma, of shape (D,)
     - dbeta: Gradient with respect to shift parameter beta, of shape (D,)
     """
+    x, gamma, std, standarized_x, varx, xmu, stdinvs, eps= cache
+    # gamma:
+    N,D = x.shape
     dx, dgamma, dbeta = None, None, None
+    dbeta = dout.sum(0)
+    dgamma = (dout * standarized_x ).sum(0)
+
+    dstandarized_x =  (dout * gamma ) * (1 / std)
+    dmultiple = (xmu * dstandarized_x).sum(0)
+    dstdinvs = -1./std**2 * dmultiple
+    dstd = 1./2 * (np.sqrt(varx + eps)) * dstdinvs
+    dmu1 = 2 * xmu/N * dstd
+    dmu2 = dstandarized_x * stdinvs
+    dmu = dmu1 + dmu2
+    dx = dmu * (1 - 1/N)
+    print(dx)
     ###########################################################################
     # TODO: Implement the backward pass for batch normalization. Store the    #
     # results in the dx, dgamma, and dbeta variables.                         #
