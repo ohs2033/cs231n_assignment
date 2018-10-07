@@ -134,7 +134,7 @@ def batchnorm_forward(x, gamma, beta, bn_param):
 
     During training the sample mean and (uncorrected) sample variance are
     computed from minibatch statistics and used to normalize the incoming data.
-    During training we also keep an exponentially decaying running mean of the
+    During training whttps://m.post.naver.com/viewer/postView.nhn?volumeNo=7718640&memberNo=16266888https://m.post.naver.com/viewer/postView.nhn?volumeNo=7718640&memberNo=16266888e also keep an exponentially decaying running mean of the
     mean and variance of each feature, and these averages are used to normalize
     data at test-time.
 
@@ -148,7 +148,7 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     behavior: they compute sample mean and variance for each feature using a
     large number of training images rather than using a running average. For
     this implementation we have chosen to use running averages instead since
-    they do not require an additional estimation step; the torch7
+    they do not require an additional estimation step; tjjhe torch7
     implementation of batch normalization also uses running averages.
 
     Input:
@@ -174,8 +174,24 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     running_mean = bn_param.get('running_mean', np.zeros(D, dtype=x.dtype))
     running_var = bn_param.get('running_var', np.zeros(D, dtype=x.dtype))
 
+    means = x.mean(0) # 1 * D
+    std = x.std(0) # 1 * D
+    vars = std**2 # 1* D
+    running_mean = momentum * running_mean + (1 - momentum) * means
+    running_var = momentum * running_var + (1 - momentum) * vars
+
+
+
     out, cache = None, None
     if mode == 'train':
+
+        #mean and variance
+        x = x - means
+        std += eps
+        x = x / np.sqrt(eps + vars)
+        out = x * (gamma) + beta
+
+
         #######################################################################
         # TODO: Implement the training-time forward pass for batch norm.      #
         # Use minibatch statistics to compute the mean and variance, use      #
@@ -208,6 +224,12 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         # then scale and shift the normalized data using gamma and beta.      #
         # Store the result in the out variable.                               #
         #######################################################################
+
+        x = x - running_mean
+        x = x / np.sqrt(running_var + eps)
+        x = x * gamma
+        out = x + beta
+
         pass
         #######################################################################
         #                          END OF YOUR CODE                           #
