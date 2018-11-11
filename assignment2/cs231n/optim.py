@@ -59,8 +59,11 @@ def sgd_momentum(w, dw, config=None):
     config.setdefault('learning_rate', 1e-2)
     config.setdefault('momentum', 0.9)
     v = config.get('velocity', np.zeros_like(w))
+    momentum, learning_rate = config.get('momentum'), config.get('learning_rate')
+    v = momentum * v - learning_rate * dw
 
-    next_w = None
+    next_w = w + v
+
     ###########################################################################
     # TODO: Implement the momentum update formula. Store the updated value in #
     # the next_w variable. You should also use and update the velocity v.     #
@@ -92,8 +95,14 @@ def rmsprop(w, dw, config=None):
     config.setdefault('decay_rate', 0.99)
     config.setdefault('epsilon', 1e-8)
     config.setdefault('cache', np.zeros_like(w))
+    decay_rate = config.get('decay_rate')
+    cache = config.get('cache')
+    cache = cache * decay_rate + (1-decay_rate) * dw**2
+    next_w = w
+    next_w += -config.get('learning_rate')* dw / (np.sqrt(cache) + config.get('epsilon'))
 
-    next_w = None
+
+    config['cache'] = cache
     ###########################################################################
     # TODO: Implement the RMSprop update formula, storing the next value of w #
     # in the next_w variable. Don't forget to update cache value stored in    #
@@ -129,8 +138,19 @@ def adam(w, dw, config=None):
     config.setdefault('m', np.zeros_like(w))
     config.setdefault('v', np.zeros_like(w))
     config.setdefault('t', 0)
+    lr = config.get('learning_rate')
+    b1 = config.get('beta1')
+    b2 = config.get('beta2')
+    eps = config.get('epsilon')
+    m, v = config.get('m'), config.get('v')
 
-    next_w = None
+    m = b1 * m + (1-b1) *dw
+    v = b2 * v + (1-b2) *dw**2
+    next_w = w - lr * m /(np.sqrt(v) + eps)
+
+    config['m'] = m
+    config['v'] = v
+
     ###########################################################################
     # TODO: Implement the Adam update formula, storing the next value of w in #
     # the next_w variable. Don't forget to update the m, v, and t variables   #

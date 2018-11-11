@@ -89,7 +89,6 @@ class TwoLayerNet(object):
         b1= self.params['b1']
         b2= self.params['b2']
 
-
         reg = self.reg
         # print(W1.shape)
         
@@ -105,31 +104,19 @@ class TwoLayerNet(object):
 
         grads = {}
 
-        # print(scores.shape)
-        # print(y.shape)
-
-
         loss, dx = softmax_loss(scores,y)
-        # print('reg is ',reg)
         loss += np.sum(reg*(W1**2))/2 + np.sum(reg*(W2**2))/2
-        # print('loss is ',loss)
 
         dx2, dw2, db2 = affine_backward(dx, second_cache)
 
         grads['W2'] = dw2 + W2*reg
-        # grads['X2'] = dx2
         grads['b2'] = db2
 
-        #렐루 백워드의 x grad.
-        dx = relu_backward(dx2, cache_relu)
 
-        #첫 번쨰 affine layer의 gradient
+        dx = relu_backward(dx2, cache_relu)
         dx1, dw1, db1 = affine_backward(dx, cache)
 
-
-
         grads['W1'] = dw1 + W1*reg
-        # grads['X1'] = dx1
         grads['b1'] = db1
 
         ############################################################################
@@ -142,7 +129,6 @@ class TwoLayerNet(object):
         # automated tests, make sure that your L2 regularization includes a factor #
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
-        pass
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################

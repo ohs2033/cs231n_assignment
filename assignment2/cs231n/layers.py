@@ -22,6 +22,7 @@ def affine_forward(x, w, b):
     - cache: (x, w, b)
     """
     x_length = reduce(lambda x, y: x*y, x.shape[1:])
+    #`print(x, w, b)
     x_vector = x.reshape((x.shape[0], x_length))
     out = x_vector.dot(w) + b
     cache = (x, w, b)
