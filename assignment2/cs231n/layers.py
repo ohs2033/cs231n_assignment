@@ -115,10 +115,6 @@ def relu_backward(dout, cache):
     mask[mask < 0] = 0
     mask[mask > 0] = 1
     dx = mask * dout
-    
-
-
-    ###########################################################################
     # TODO: Implement the ReLU backward pass.                                 #
     ###########################################################################
     pass
@@ -134,15 +130,13 @@ def batchnorm_forward(x, gamma, beta, bn_param):
 
     During training the sample mean and (uncorrected) sample variance are
     computed from minibatch statistics and used to normalize the incoming data.
-    During training whttps://m.post.naver.com/viewer/postView.nhn?volumeNo=7718640&memberNo=16266888https://m.post.naver.com/viewer/postView.nhn?volumeNo=7718640&memberNo=16266888e also keep an exponentially decaying running mean of the
+    During training also keep an exponentially decaying running mean of the
     mean and variance of each feature, and these averages are used to normalize
     data at test-time.
 
     At each timestep we update the running averages for mean and variance using
     an exponential decay based on the momentum parameter:
-
-    running_mean = momentum * running_mean + (1 - momentum) * sample_mean
-    running_var = momentum * running_var + (1 - momentum) * sample_var
+   running_var = momentum * running_var + (1 - momentum) * sample_var
 
     Note that the batch normalization paper suggests a different test-time
     behavior: they compute sample mean and variance for each feature using a
